@@ -7,24 +7,13 @@ until it is fixed. Inspired by the Roshnee community's fix-it-ourselves spirit.
 
 | | |
 |---|---|
-| **Status** | Built and tested — not yet published (see *Going live* below) |
-| **View it now** | `python -m http.server 8214 --directory C:\Users\Dell\ward120-fixit` → http://localhost:8214 |
-| **Team console** | http://localhost:8214/admin.html (once live: `<site-url>/admin.html`) |
-| **Backend** | Supabase project `ward120-fixit` (`vzwkelixolmexgfkwoif`, eu-west-1, free tier) — **already live** |
+| **Public site** | https://166omar.github.io/ward120-fixit/ (live, deployed 29 Aug 2026) |
+| **Team console** | https://166omar.github.io/ward120-fixit/admin.html |
+| **Code** | https://github.com/166omar/ward120-fixit (push to `main` redeploys automatically) |
+| **Backend** | Supabase project `ward120-fixit` (`vzwkelixolmexgfkwoif`, eu-west-1, free tier) |
 
-## Going live (when you're ready — 2 commands)
-
-The backend is already running in the cloud; only the pages need hosting. From
-`C:\Users\Dell\ward120-fixit` (or ask Claude to do it):
-
-```
-gh repo create ward120-fixit --public --source . --push
-gh api repos/166omar/ward120-fixit/pages -X POST -f "source[branch]=main" -f "source[path]=/"
-```
-
-A minute later the site is live at **https://166omar.github.io/ward120-fixit/** —
-share that link on the community WhatsApp groups. (A custom domain like
-`fixward120.co.za` can be pointed at it later in the repo's Pages settings.)
+Sharing the site link on the community WhatsApp groups *is* the launch. A custom
+domain (e.g. `fixward120.co.za`) can be pointed at it later in the repo's Pages settings.
 
 ## Team sign-in
 
