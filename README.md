@@ -18,9 +18,8 @@ domain (e.g. `fixward120.co.za`) can be pointed at it later in the repo's Pages 
 ## Team sign-in
 
 - Email: `166omar@gmail.com`
-- Temporary password: `W120-Truth!2026` — **change this after your first login**
-  (Supabase dashboard → Authentication → Users → your user → Reset password,
-  or use "Forgot password" flows once SMTP is set up).
+- Password: set privately (to change it: Supabase dashboard → Authentication →
+  Users → your user → Reset password).
 
 ### Add more team members
 1. Supabase dashboard → Authentication → Users → *Add user* (email + password, auto-confirm).

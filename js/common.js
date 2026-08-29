@@ -13,10 +13,13 @@ const PUBLIC_COLUMNS =
   "escalation_ref,fixed_photo_url,fixed_at,supports,created_at,updated_at";
 
 const CATEGORIES = {
-  water: { label: "Water leak", emoji: "\u{1F4A7}" },
-  sewer: { label: "Sewer spill", emoji: "\u{1F6BD}" },
-  road:  { label: "Road damage", emoji: "\u{1F6E3}️" },
-  other: { label: "Other problem", emoji: "⚠️" }
+  water:   { label: "Water leak", emoji: "\u{1F4A7}" },
+  sewer:   { label: "Sewer spill", emoji: "\u{1F6BD}" },
+  road:    { label: "Road damage", emoji: "\u{1F6E3}️" },
+  dumping: { label: "Dumping / dirty area", emoji: "\u{1F5D1}️" },
+  drain:   { label: "Blocked storm drain", emoji: "\u{1F327}️" },
+  light:   { label: "Street light out", emoji: "\u{1F4A1}" },
+  other:   { label: "Other problem", emoji: "⚠️" }
 };
 
 const STATUSES = {
