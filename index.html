@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fix Ward 120 — report water leaks &amp; broken roads</title>
+<meta name="description" content="Report leaking taps, sewer spills and broken roads in Ward 120 (Lenasia South, Vlakfontein, Hospital Hills). Truth and Solidarity tracks every report in public until it is fixed.">
+<meta name="theme-color" content="#0B6E4F">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="hdr">
+  <div class="brand">FIX <span class="amber">WARD 120</span></div>
+  <div class="tag">Report it. We track it in public. Together we fix it.</div>
+</header>
+<div class="counters" id="counters">
+  <div class="counter"><b id="cOpen">–</b><span>Reported</span></div>
+  <div class="counter busy"><b id="cBusy">–</b><span>Being fixed</span></div>
+  <div class="counter fixed"><b id="cFixed">–</b><span>Fixed ✔</span></div>
+</div>
+
+<main class="shell">
+
+<!-- ============ REPORT TAB ============ -->
+<section class="tabpage on" id="page-report">
+  <div id="offlineBanner" class="banner" hidden>
+    ⚠️ We can’t reach the server right now. Please check your connection and try again<span id="waFallback"></span>.
+  </div>
+
+  <div class="card" id="reportCard">
+    <h2>Report a problem</h2>
+
+    <label>What is the problem?</label>
+    <div class="chips" id="catChips"></div>
+
+    <label for="fDesc">Describe it</label>
+    <textarea id="fDesc" maxlength="2000" placeholder="e.g. Water has been leaking at the corner of this street for 3 days"></textarea>
+
+    <label for="fArea">Which area?</label>
+    <select id="fArea"></select>
+
+    <label>Where exactly? <span class="opt">tap the map or use your location</span></label>
+    <button type="button" class="btn second" id="btnLocate" style="margin-bottom:8px">📍 Use my location</button>
+    <div id="pickMap"></div>
+    <div class="hint" id="locHint">Move the pin to the exact spot of the problem.</div>
+
+    <label for="fPhoto">Photo <span class="opt">(optional, but it helps a lot)</span></label>
+    <input type="file" id="fPhoto" accept="image/*" capture="environment">
+    <div class="hint" id="photoHint"></div>
+
+    <label for="fName">Your name <span class="opt">(optional — never shown publicly)</span></label>
+    <input type="text" id="fName" maxlength="120" autocomplete="name">
+
+    <label for="fPhone">Your phone <span class="opt">(optional — kept private, only so we can tell you when it’s fixed)</span></label>
+    <input type="tel" id="fPhone" maxlength="20" autocomplete="tel" placeholder="073 123 4567">
+
+    <div style="margin-top:16px">
+      <button type="button" class="btn" id="btnSubmit">Send report</button>
+    </div>
+    <p class="hint" style="margin-top:10px">Your report appears on the public list immediately, with a reference
+    number you can use to follow up. Your name and phone number stay private.</p>
+  </div>
+
+  <div class="card success" id="successCard" hidden>
+    <div class="big">🎉</div>
+    <h2>Thank you! Your report is in.</h2>
+    <p>Your reference number is</p>
+    <div class="refno" id="successRef">W120-0000</div>
+    <p class="hint">The Truth and Solidarity team sees every report. Follow your report’s progress
+    on the <b>Reports</b> tab — every step is public.</p>
+    <a class="btn wa" id="btnShareWA" target="_blank" rel="noopener" hidden>Share on WhatsApp</a>
+    <div style="height:8px"></div>
+    <button type="button" class="btn second" id="btnAnother">Report another problem</button>
+  </div>
+</section>
+
+<!-- ============ MAP TAB ============ -->
+<section class="tabpage" id="page-map">
+  <div class="card" style="padding:10px">
+    <div id="bigMap"></div>
+    <div class="hint" style="margin-top:8px">
+      🔴 reported &nbsp; 🟠 being fixed / escalated &nbsp; 🟢 fixed
+    </div>
+  </div>
+</section>
+
+<!-- ============ REPORTS TAB ============ -->
+<section class="tabpage" id="page-list">
+  <div class="filters" id="listFilters">
+    <button data-f="all" class="on">All</button>
+    <button data-f="water">💧 Water</button>
+    <button data-f="sewer">🚰 Sewer</button>
+    <button data-f="road">🛣️ Roads</button>
+    <button data-f="open">Still open</button>
+    <button data-f="fixed">Fixed ✔</button>
+  </div>
+  <div id="listWrap"></div>
+</section>
+
+<!-- ============ FIXED TAB ============ -->
+<section class="tabpage" id="page-fixed">
+  <h2 style="margin-top:0">✅ Fixed — proof, not promises</h2>
+  <p class="hint" style="margin-top:-6px">Every fix stays here permanently, with photos and dates.</p>
+  <div id="fixedWrap"></div>
+</section>
+
+<!-- ============ ABOUT TAB ============ -->
+<section class="tabpage" id="page-about">
+  <div class="card">
+    <h2>Why this exists</h2>
+    <p>Ward 120 — Lenasia South, Hospital Hills, Vlakfontein — has waited too long for basics:
+    water that stays in the pipes and roads you can actually drive on.
+    In Roshnee, the community stopped waiting and started fixing its own town.
+    <b>Truth and Solidarity</b> is bringing that same spirit here.</p>
+    <p>This site is our public promise book. Every report is numbered, visible to everyone,
+    and tracked until it is fixed. Nothing is ever deleted.</p>
+  </div>
+
+  <div class="card">
+    <h2>Our promise</h2>
+    <ul class="promise">
+      <li>📬 We look at <b>every report, same day</b>.</li>
+      <li>👷 What our volunteers can fix, <b>we fix ourselves</b> — the Roshnee way.</li>
+      <li>🏛️ What needs the municipality (Joburg Water / JRA), <b>we escalate and publish the reference number</b> so you can see we did.</li>
+      <li>📖 Every status change is stamped on a public timeline. <b>Nothing gets deleted.</b></li>
+      <li>🔒 Your name and phone number are <b>never shown publicly</b> (POPIA).</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>How it works</h2>
+    <div class="step"><div class="n">1</div><div><b>You report it</b> — pin the spot, add a photo, 60 seconds.</div></div>
+    <div class="step"><div class="n">2</div><div><b>Everyone can see it</b> — on the public map and list, with a reference number.</div></div>
+    <div class="step"><div class="n">3</div><div><b>We act on it</b> — fix it or escalate it, and the timeline shows every step until it’s green.</div></div>
+  </div>
+
+  <div class="card" id="volunteerCard" hidden>
+    <h2>Get involved</h2>
+    <p>This is a community project — hands, tools, bakkies and skills all welcome.</p>
+    <a class="btn wa" id="btnVolunteer" target="_blank" rel="noopener">💪 Volunteer via WhatsApp</a>
+  </div>
+
+  <div class="card">
+    <h2>Privacy</h2>
+    <p class="hint" style="font-size:13.5px">We collect only what you type in the report form. Your description, area, photo and
+    location are public so the whole community can see the problem and its progress. Your name and
+    phone number are stored securely, visible only to the Truth and Solidarity response team, used
+    only to contact you about your report, and never shared or sold.</p>
+  </div>
+
+  <div class="foot">
+    A <b>Truth and Solidarity</b> community project · Ward 120, City of Johannesburg<br>
+    Built by the community, for the community.
+  </div>
+</section>
+
+</main>
+
+<!-- ============ DETAIL MODAL ============ -->
+<div class="modal-back" id="modalBack">
+  <div class="modal" id="modalBody"></div>
+</div>
+
+<!-- ============ TABS ============ -->
+<nav class="tabs">
+  <button data-tab="report" class="on"><span class="ico">📣</span>Report</button>
+  <button data-tab="map"><span class="ico">🗺️</span>Map</button>
+  <button data-tab="list"><span class="ico">📋</span>Reports</button>
+  <button data-tab="fixed"><span class="ico">✅</span>Fixed</button>
+  <button data-tab="about"><span class="ico">🤝</span>About</button>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

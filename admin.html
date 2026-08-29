@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fix Ward 120 — Team Console</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0B6E4F">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="hdr">
+  <div class="brand">FIX <span class="amber">WARD 120</span> · TEAM</div>
+  <div class="tag">Truth and Solidarity response console</div>
+</header>
+
+<main class="shell" style="padding-bottom:30px">
+
+  <!-- login -->
+  <div class="card" id="loginCard" style="margin-top:16px">
+    <h2>Team sign in</h2>
+    <label for="lEmail">Email</label>
+    <input type="email" id="lEmail" autocomplete="username">
+    <label for="lPass">Password</label>
+    <input type="password" id="lPass" autocomplete="current-password">
+    <div style="margin-top:14px"><button class="btn" id="btnLogin">Sign in</button></div>
+    <p class="hint" style="margin-top:10px">Team members only. Residents report at the <a href="index.html">main page</a>.</p>
+  </div>
+
+  <!-- console -->
+  <div id="console" hidden>
+    <div class="admin-top">
+      <div class="statgrid">
+        <div class="counter"><b id="sNew">–</b><span>New</span></div>
+        <div class="counter"><b id="sBusy">–</b><span>In progress</span></div>
+        <div class="counter"><b id="sFixed">–</b><span>Fixed</span></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn small second" id="btnCsv">⬇ CSV</button>
+        <button class="btn small second" id="btnLogout">Sign out</button>
+      </div>
+    </div>
+    <div class="filters" id="aFilters">
+      <button data-f="open" class="on">Open</button>
+      <button data-f="new">New</button>
+      <button data-f="in_progress">In progress</button>
+      <button data-f="escalated">Escalated</button>
+      <button data-f="fixed">Fixed</button>
+      <button data-f="all">All</button>
+    </div>
+    <div id="aWrap"></div>
+  </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

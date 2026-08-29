@@ -1,0 +1,13 @@
+{
+  "name": "Fix Ward 120",
+  "short_name": "FixW120",
+  "description": "Report water leaks and broken roads in Ward 120 — tracked in public until fixed.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#F6F5F1",
+  "theme_color": "#0B6E4F",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
