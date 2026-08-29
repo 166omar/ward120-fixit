@@ -9,7 +9,7 @@ window.W120 = {
 
   // Truth and Solidarity WhatsApp number in international format, digits only,
   // e.g. "27731234567". Leave "" to hide all WhatsApp buttons until ready.
-  WHATSAPP_NUMBER: "",
+  WHATSAPP_NUMBER: "27833435786",
 
   // Map defaults (Lenasia South / Vlakfontein, Ward 120)
   MAP_CENTER: [-26.392, 27.870],
