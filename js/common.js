@@ -14,7 +14,7 @@ const PUBLIC_COLUMNS =
 
 const CATEGORIES = {
   water: { label: "Water leak", emoji: "\u{1F4A7}" },
-  sewer: { label: "Sewer spill", emoji: "\u{1F6B0}" },
+  sewer: { label: "Sewer spill", emoji: "\u{1F6BD}" },
   road:  { label: "Road damage", emoji: "\u{1F6E3}️" },
   other: { label: "Other problem", emoji: "⚠️" }
 };
