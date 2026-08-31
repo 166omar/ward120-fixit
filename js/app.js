@@ -46,8 +46,16 @@ function buildCategoryChips() {
 }
 
 function buildAreas() {
-  document.getElementById("fArea").innerHTML =
-    W120.AREAS.map(function (a) { return "<option>" + esc(a) + "</option>"; }).join("");
+  const areaEl = document.getElementById("fArea");
+  if (areaEl.tagName === "SELECT") {
+    areaEl.innerHTML =
+      W120.AREAS.map(function (a) { return "<option>" + esc(a) + "</option>"; }).join("");
+  }
+  const muniEl = document.getElementById("fMuni"); // Gauteng-wide site only
+  if (muniEl && W120.MUNICIPALITIES) {
+    muniEl.innerHTML =
+      W120.MUNICIPALITIES.map(function (m) { return "<option>" + esc(m) + "</option>"; }).join("");
+  }
 }
 
 function initPickMap() {
@@ -102,8 +110,12 @@ document.getElementById("fPhoto").addEventListener("change", async function () {
 
 document.getElementById("btnSubmit").addEventListener("click", async function () {
   const desc = document.getElementById("fDesc").value.trim();
+  const areaEl = document.getElementById("fArea");
   if (!state.category) { toast("Please choose what the problem is", true); return; }
   if (desc.length < 5) { toast("Please describe the problem in a few words", true); return; }
+  if (areaEl.tagName === "INPUT" && areaEl.value.trim().length < 2) {
+    toast("Please type your suburb or area", true); return;
+  }
   if (!state.locationSet) {
     toast("Please set the location — tap the map or use 📍 My location", true);
     document.getElementById("pickMap").scrollIntoView({ behavior: "smooth", block: "center" });
@@ -118,12 +130,14 @@ document.getElementById("btnSubmit").addEventListener("click", async function ()
     const row = {
       category: state.category,
       description: desc,
-      area: document.getElementById("fArea").value,
+      area: areaEl.value.trim() || "Other",
       lat: ll.lat, lng: ll.lng,
       photo_url: photo_url,
       reporter_name: document.getElementById("fName").value.trim() || null,
       reporter_phone: document.getElementById("fPhone").value.trim() || null
     };
+    const muniEl = document.getElementById("fMuni"); // Gauteng-wide site only
+    if (muniEl) row.municipality = muniEl.value;
     const res = await sb.from("reports").insert(row).select("ref").single();
     if (res.error) throw res.error;
     showSuccess(res.data.ref);
@@ -218,7 +232,7 @@ function renderList() {
       '<div class="body">' +
         '<div class="top"><span class="ref">' + esc(r.ref) + "</span>" + statusBadge(r.status) + "</div>" +
         '<div class="desc">' + esc(r.description) + "</div>" +
-        '<div class="meta">' + esc(r.area) + " · " + timeAgo(r.created_at) + "</div>" +
+        '<div class="meta">' + placeLabel(r) + " · " + timeAgo(r.created_at) + "</div>" +
         '<button type="button" class="support' + (done ? " done" : "") + '" data-sup="' + r.id + '">' +
           "🙋 Me too" + (r.supports > 0 ? " · " + r.supports : "") + "</button>" +
       "</div></div>";
@@ -261,7 +275,7 @@ async function openDetail(id) {
       statusBadge(r.status) + "</div></div>" +
     (r.photo_url ? '<p><img src="' + esc(r.photo_url) + '" alt="report photo" style="border-radius:10px"></p>' : "") +
     "<p>" + esc(r.description) + "</p>" +
-    '<p class="hint">' + esc(r.area) + " · reported " + fmtDate(r.created_at) + " · 🙋 " + r.supports + " affected</p>" +
+    '<p class="hint">' + placeLabel(r) + " · reported " + fmtDate(r.created_at) + " · 🙋 " + r.supports + " affected</p>" +
     (r.escalation_ref ?
       '<div class="banner">🏛️ Escalated to the municipality — reference <b>' + esc(r.escalation_ref) + "</b></div>" : "") +
     (r.fixed_photo_url ?
@@ -308,7 +322,7 @@ function renderFixed() {
       (days !== null ? '<span class="fixdays">Fixed in ' + days + (days === 1 ? " day" : " days") + "</span>" : statusBadge("fixed")) +
       "</div>" +
       '<div class="desc">' + esc(r.description) + "</div>" +
-      '<div class="meta">' + esc(r.area) + "</div>" +
+      '<div class="meta">' + placeLabel(r) + "</div>" +
       ((r.photo_url || r.fixed_photo_url) ?
         '<div class="beforeafter"><div><div class="lbl">Before</div>' +
         (r.photo_url ? '<img src="' + esc(r.photo_url) + '" alt="before">' : '<p class="hint">no photo</p>') +

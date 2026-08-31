@@ -69,7 +69,7 @@ function render() {
       '<div class="top" style="display:flex;justify-content:space-between;align-items:center">' +
         '<b style="color:#0B6E4F">' + esc(r.ref) + "</b> " + statusBadge(r.status) + "</div>" +
       '<p style="margin:6px 0">' + cat.emoji + " " + esc(r.description) + "</p>" +
-      '<div class="hint">' + esc(r.area) + " · " + fmtDate(r.created_at) + " · 🙋 " + r.supports +
+      '<div class="hint">' + placeLabel(r) + " · " + fmtDate(r.created_at) + " · 🙋 " + r.supports +
         ' · <a href="https://www.openstreetmap.org/?mlat=' + r.lat + "&mlon=" + r.lng + "#map=18/" + r.lat + "/" + r.lng +
         '" target="_blank" rel="noopener">map 🗺️</a></div>' +
       (r.photo_url ? '<p><a href="' + esc(r.photo_url) + '" target="_blank" rel="noopener"><img class="athumb" src="' + esc(r.photo_url) + '" alt="photo"></a></p>' : "") +
@@ -123,7 +123,7 @@ document.getElementById("aWrap").addEventListener("click", async function (e) {
 
 /* ============ CSV export ============ */
 document.getElementById("btnCsv").addEventListener("click", function () {
-  const cols = ["ref", "category", "status", "description", "area", "lat", "lng",
+  const cols = ["ref", "category", "status", "description", "area", "municipality", "lat", "lng",
     "reporter_name", "reporter_phone", "escalation_ref", "supports", "created_at", "fixed_at"];
   const lines = [cols.join(",")].concat(all.map(function (r) {
     return cols.map(function (c) {

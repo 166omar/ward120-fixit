@@ -9,8 +9,13 @@ function w120Client() {
 /* Anon role may only read these columns (reporter name/phone are blocked by the DB).
    Never use select('*') on the public page. */
 const PUBLIC_COLUMNS =
-  "id,ref,category,description,area,lat,lng,photo_url,status,status_note," +
+  "id,ref,category,description,area,municipality,lat,lng,photo_url,status,status_note," +
   "escalation_ref,fixed_photo_url,fixed_at,supports,created_at,updated_at";
+
+/* "Vlakfontein · City of Johannesburg" — used on cards and detail views */
+function placeLabel(r) {
+  return esc(r.area) + (r.municipality ? " · " + esc(r.municipality) : "");
+}
 
 const CATEGORIES = {
   water:   { label: "Water leak", emoji: "\u{1F4A7}" },
