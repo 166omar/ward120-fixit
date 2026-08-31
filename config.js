@@ -15,6 +15,34 @@ window.W120 = {
   MAP_CENTER: [-26.392, 27.870],
   MAP_ZOOM: 13,
 
+  // Department emails used by the admin "Escalate" button, per municipality.
+  // These are publicly listed addresses — VERIFY them before first use and fill
+  // in the blanks (your ward councillor's office will know the right ones).
+  // Per-category overrides: water, sewer, drain, road, light. "default" is the fallback.
+  ESCALATION_EMAILS: {
+    "City of Johannesburg": {
+      default: "joburgconnect@joburg.org.za",
+      water: "custserv@jwater.co.za",
+      sewer: "custserv@jwater.co.za",
+      drain: "hotline@jra.org.za",
+      road:  "hotline@jra.org.za"
+    },
+    "City of Tshwane":   { default: "customercare@tshwane.gov.za" },
+    "City of Ekurhuleni": { default: "" },
+    "Emfuleni":          { default: "" },
+    "Midvaal":           { default: "" },
+    "Lesedi":            { default: "" },
+    "Mogale City":       { default: "" },
+    "Rand West City":    { default: "" },
+    "Merafong City":     { default: "" }
+  },
+
+  // Donations. Fill either (or both) to show them on the Support card:
+  // DONATE_URL: a payment link (PayFast / BackaBuddy / SnapScan / Yoco page)
+  // DONATE_BANK: bank/EFT details, use \n for new lines
+  DONATE_URL: "",
+  DONATE_BANK: "",
+
   // Areas offered in the report form (edit freely)
   AREAS: [
     "Lenasia South",

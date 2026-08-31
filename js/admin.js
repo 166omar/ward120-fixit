@@ -3,6 +3,7 @@
 
 const sb = w120Client();
 let all = [];
+let vols = [];
 let aFilter = "open";
 
 /* ============ auth ============ */
@@ -37,9 +38,17 @@ async function load() {
   const res = await sb.from("reports").select("*").order("created_at", { ascending: false }).limit(1000);
   if (res.error) { toast("Load failed: " + res.error.message, true); return; }
   all = res.data;
+  const vres = await sb.from("volunteers").select("*").order("created_at", { ascending: false }).limit(2000);
+  vols = vres.error ? [] : vres.data;
   document.getElementById("sNew").textContent = all.filter(function (r) { return r.status === "new" || r.status === "acknowledged"; }).length;
   document.getElementById("sBusy").textContent = all.filter(function (r) { return r.status === "in_progress" || r.status === "escalated"; }).length;
   document.getElementById("sFixed").textContent = all.filter(function (r) { return r.status === "fixed"; }).length;
+  const attnEl = document.getElementById("sAttn");
+  if (attnEl) {
+    const n = all.filter(function (r) { return needsAttention(r); }).length;
+    attnEl.textContent = n;
+    attnEl.style.color = n > 0 ? "#D64545" : "";
+  }
   render();
 }
 
@@ -54,20 +63,24 @@ document.getElementById("aFilters").addEventListener("click", function (e) {
 function rows() {
   if (aFilter === "all") return all;
   if (aFilter === "open") return all.filter(function (r) { return ["new", "acknowledged", "in_progress", "escalated"].indexOf(r.status) >= 0; });
+  if (aFilter === "attention") return all.filter(function (r) { return needsAttention(r); });
   return all.filter(function (r) { return r.status === aFilter; });
 }
 
 function render() {
   const wrap = document.getElementById("aWrap");
+  if (aFilter === "volunteers") { renderVolunteers(wrap); return; }
   const list = rows();
   if (!list.length) { wrap.innerHTML = '<div class="card"><p style="text-align:center;color:#66736E">Nothing here.</p></div>'; return; }
   wrap.innerHTML = list.map(function (r) {
     const cat = CATEGORIES[r.category] || CATEGORIES.other;
     const st = STATUSES[r.status] || STATUSES.new;
+    const attn = needsAttention(r);
     const phoneDigits = (r.reporter_phone || "").replace(/\D/g, "").replace(/^0/, "27");
     return '<div class="card acard" style="border-left-color:' + st.color + '" data-id="' + r.id + '">' +
       '<div class="top" style="display:flex;justify-content:space-between;align-items:center">' +
         '<b style="color:#0B6E4F">' + esc(r.ref) + "</b> " + statusBadge(r.status) + "</div>" +
+      (attn ? '<div class="banner" style="margin:8px 0">' + esc(attn) + "</div>" : "") +
       '<p style="margin:6px 0">' + cat.emoji + " " + esc(r.description) + "</p>" +
       '<div class="hint">' + placeLabel(r) + " · " + fmtDate(r.created_at) + " · 🙋 " + r.supports +
         ' · <a href="https://www.openstreetmap.org/?mlat=' + r.lat + "&mlon=" + r.lng + "#map=18/" + r.lat + "/" + r.lng +
@@ -91,9 +104,49 @@ function render() {
       '<input type="text" class="eNote" maxlength="500" placeholder="e.g. Team visited today, part ordered" value="">' +
       '<label>“Fixed” photo <span class="opt">(after photo for the trust wall)</span></label>' +
       '<input type="file" class="eFixedPhoto" accept="image/*">' +
-      '<div style="margin-top:10px"><button class="btn small eSave">💾 Save update</button></div>' +
+      '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button class="btn small eSave">💾 Save update</button>' +
+        '<a class="btn small second" href="' + escalationMailto(r) + '">📧 Escalate email' +
+          (escalationEmail(r) ? "" : " (add address)") + "</a>" +
+      "</div>" +
     "</div>";
   }).join("");
+}
+
+/* ============ volunteers ============ */
+function renderVolunteers(wrap) {
+  if (!vols.length) {
+    wrap.innerHTML = '<div class="card"><p style="text-align:center;color:#66736E">No volunteer sign-ups yet — share the site!</p></div>';
+    return;
+  }
+  wrap.innerHTML =
+    '<div class="card"><b>👥 ' + vols.length + " volunteer" + (vols.length === 1 ? "" : "s") +
+    '</b> · newest first · <a href="#" id="volCsv">⬇ download CSV</a></div>' +
+    vols.map(function (v) {
+      const digits = (v.phone || "").replace(/\D/g, "").replace(/^0/, "27");
+      return '<div class="card"><b>' + esc(v.name) + "</b> · " + esc(v.phone) +
+        (digits ? ' · <a href="https://wa.me/' + digits + '" target="_blank" rel="noopener">WhatsApp</a>' : "") +
+        ' · <a href="tel:' + esc(v.phone) + '">call</a>' +
+        '<div class="hint">' + esc(v.area || "") +
+          (v.municipality ? " · " + esc(v.municipality) : "") + " · joined " + fmtDate(v.created_at) + "</div>" +
+        (v.skills ? '<div style="margin-top:4px">🛠️ ' + esc(v.skills) + "</div>" : "") +
+      "</div>";
+    }).join("");
+  document.getElementById("volCsv").addEventListener("click", function (e) {
+    e.preventDefault();
+    const cols = ["name", "phone", "area", "municipality", "skills", "created_at"];
+    const lines = [cols.join(",")].concat(vols.map(function (v) {
+      return cols.map(function (c) {
+        return '"' + String(v[c] == null ? "" : v[c]).replace(/"/g, '""') + '"';
+      }).join(",");
+    }));
+    const blob = new Blob([lines.join("\r\n")], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "ts-volunteers-" + new Date().toISOString().slice(0, 10) + ".csv";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
 }
 
 /* ============ save ============ */

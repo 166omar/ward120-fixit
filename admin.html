@@ -35,6 +35,7 @@
       <div class="statgrid">
         <div class="counter"><b id="sNew">–</b><span>New</span></div>
         <div class="counter"><b id="sBusy">–</b><span>In progress</span></div>
+        <div class="counter"><b id="sAttn">–</b><span>⏰ Attention</span></div>
         <div class="counter"><b id="sFixed">–</b><span>Fixed</span></div>
       </div>
       <div style="display:flex;gap:8px">
@@ -44,11 +45,13 @@
     </div>
     <div class="filters" id="aFilters">
       <button data-f="open" class="on">Open</button>
+      <button data-f="attention">⏰ Attention</button>
       <button data-f="new">New</button>
       <button data-f="in_progress">In progress</button>
       <button data-f="escalated">Escalated</button>
       <button data-f="fixed">Fixed</button>
       <button data-f="all">All</button>
+      <button data-f="volunteers">👥 Volunteers</button>
     </div>
     <div id="aWrap"></div>
   </div>
@@ -56,8 +59,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="config.js?v=2"></script>
-<script src="js/common.js?v=4"></script>
-<script src="js/admin.js?v=2"></script>
+<script src="config.js?v=3"></script>
+<script src="js/common.js?v=5"></script>
+<script src="js/admin.js?v=3"></script>
 </body>
 </html>

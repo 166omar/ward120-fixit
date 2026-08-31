@@ -145,7 +145,32 @@
   <div class="card" id="volunteerCard" hidden>
     <h2>Get involved</h2>
     <p>This is a community project — hands, tools, bakkies and skills all welcome.</p>
-    <a class="btn wa" id="btnVolunteer" target="_blank" rel="noopener">💪 Volunteer via WhatsApp</a>
+    <div id="volFields">
+      <label for="volName">Your name</label>
+      <input type="text" id="volName" maxlength="120" autocomplete="name">
+      <label for="volPhone">Phone</label>
+      <input type="tel" id="volPhone" maxlength="20" autocomplete="tel" placeholder="073 123 4567">
+      <label for="volArea">Your area <span class="opt">(optional)</span></label>
+      <input type="text" id="volArea" maxlength="120" placeholder="e.g. Vlakfontein">
+      <label for="volSkills">How can you help? <span class="opt">(skills, tools, time…)</span></label>
+      <input type="text" id="volSkills" maxlength="500" placeholder="e.g. plumbing, bakkie, Saturdays">
+      <div style="margin-top:12px"><button type="button" class="btn" id="volSubmit">💪 Sign me up</button></div>
+      <p class="hint" style="margin-top:8px">Your details go only to the Truth and Solidarity team — never public.</p>
+    </div>
+    <div id="volDone" hidden>
+      <p style="text-align:center">✅ <b>You're in!</b> The team will be in touch. Thank you for standing up for your community.</p>
+    </div>
+    <div style="height:6px"></div>
+    <a class="btn wa" id="btnVolunteer" target="_blank" rel="noopener">…or WhatsApp us directly</a>
+  </div>
+
+  <div class="card" id="donateCard" hidden>
+    <h2>Support the work</h2>
+    <p>Every repair is paid for by the community — materials, fittings, fuel.
+    If you can't give time, you can still carry the work.</p>
+    <a class="btn" id="btnDonate" target="_blank" rel="noopener" hidden style="margin-bottom:8px">💚 Donate online</a>
+    <pre id="donateBank" class="banner" style="white-space:pre-wrap;font-family:inherit" hidden></pre>
+    <a class="btn wa" id="btnDonateWA" target="_blank" rel="noopener" hidden>🤲 Donate / pledge via WhatsApp</a>
   </div>
 
   <div class="card">
@@ -181,8 +206,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="config.js?v=2"></script>
-<script src="js/common.js?v=4"></script>
-<script src="js/app.js?v=2"></script>
+<script src="config.js?v=3"></script>
+<script src="js/common.js?v=5"></script>
+<script src="js/app.js?v=3"></script>
 </body>
 </html>

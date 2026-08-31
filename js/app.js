@@ -391,9 +391,60 @@ function initWhatsApp() {
     waLink(W120.WHATSAPP_NUMBER, "Hi Truth and Solidarity — I want to volunteer for Ward 120 fixes!");
 }
 
+/* ================= volunteer sign-up (pages that have the form) ================= */
+const volBtn = document.getElementById("volSubmit");
+if (volBtn) {
+  volBtn.addEventListener("click", async function () {
+    const name = document.getElementById("volName").value.trim();
+    const phone = document.getElementById("volPhone").value.trim();
+    if (name.length < 2) { toast("Please give us your name", true); return; }
+    if (phone.replace(/\D/g, "").length < 9) { toast("Please give a phone number we can reach you on", true); return; }
+    volBtn.disabled = true; volBtn.textContent = "Sending…";
+    const row = {
+      name: name,
+      phone: phone,
+      area: document.getElementById("volArea").value.trim() || null,
+      skills: document.getElementById("volSkills").value.trim() || null
+    };
+    const res = await sb.from("volunteers").insert(row);
+    volBtn.disabled = false; volBtn.textContent = "💪 Sign me up";
+    if (res.error) {
+      console.error(res.error);
+      toast("Couldn't send — please try again, or WhatsApp us instead", true);
+      return;
+    }
+    document.getElementById("volFields").hidden = true;
+    document.getElementById("volDone").hidden = false;
+    toast("Welcome to the team! 💚");
+  });
+}
+
+/* ================= donations card (shown once configured) ================= */
+function initDonate() {
+  const card = document.getElementById("donateCard");
+  if (!card) return;
+  const hasURL = !!W120.DONATE_URL, hasBank = !!W120.DONATE_BANK;
+  if (!hasURL && !hasBank && !W120.WHATSAPP_NUMBER) return;
+  card.hidden = false;
+  if (hasURL) {
+    const a = document.getElementById("btnDonate");
+    a.href = W120.DONATE_URL; a.hidden = false;
+  }
+  if (hasBank) {
+    const b = document.getElementById("donateBank");
+    b.textContent = W120.DONATE_BANK; b.hidden = false;
+  }
+  const w = document.getElementById("btnDonateWA");
+  if (w && W120.WHATSAPP_NUMBER) {
+    w.href = waLink(W120.WHATSAPP_NUMBER, "Hi Truth and Solidarity — I'd like to support / donate to the work.");
+    w.hidden = false;
+  }
+}
+
 /* ================= boot ================= */
 buildCategoryChips();
 buildAreas();
 initPickMap();
 initWhatsApp();
+initDonate();
 loadReports();

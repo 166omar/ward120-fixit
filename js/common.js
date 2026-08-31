@@ -115,3 +115,49 @@ function toast(msg, isError) {
 function waLink(number, text) {
   return "https://wa.me/" + number + "?text=" + encodeURIComponent(text);
 }
+
+/* ---- Escalation email (admin console) ---- */
+function escalationEmail(r) {
+  const m = (W120.ESCALATION_EMAILS || {})[r.municipality] || {};
+  return m[r.category] || m.default || "";
+}
+
+function escalationMailto(r) {
+  const to = escalationEmail(r);
+  const cat = (CATEGORIES[r.category] || CATEGORIES.other).label;
+  const subject = "Fault report " + r.ref + ": " + cat + " — " + r.area +
+    (r.municipality ? ", " + r.municipality : "");
+  const body =
+    "Good day\r\n\r\n" +
+    "Please log the following fault and provide a reference number.\r\n\r\n" +
+    "Type of fault: " + cat + "\r\n" +
+    "Location: " + r.area + (r.municipality ? ", " + r.municipality : "") + "\r\n" +
+    "GPS: " + r.lat.toFixed(6) + ", " + r.lng.toFixed(6) + "\r\n" +
+    "Map: https://www.openstreetmap.org/?mlat=" + r.lat + "&mlon=" + r.lng +
+      "#map=18/" + r.lat + "/" + r.lng + "\r\n" +
+    "Description: " + r.description + "\r\n" +
+    (r.photo_url ? "Photo: " + r.photo_url + "\r\n" : "") +
+    "First reported: " + new Date(r.created_at).toLocaleDateString("en-ZA") + "\r\n" +
+    "Community reference: " + r.ref + "\r\n\r\n" +
+    "This fault is tracked publicly by the Truth and Solidarity community project. " +
+    "Kindly reply with your reference number so we can publish it for residents.\r\n\r\n" +
+    "Thank you\r\nTruth and Solidarity";
+  return "mailto:" + encodeURIComponent(to) +
+    "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+}
+
+/* ---- Follow-up alarms (admin console) ----
+   Returns a reason string if the report needs attention, else null. */
+function needsAttention(r) {
+  const dayMs = 86400000;
+  const sinceCreated = Math.floor((Date.now() - new Date(r.created_at)) / dayMs);
+  const sinceUpdate = Math.floor((Date.now() - new Date(r.updated_at || r.created_at)) / dayMs);
+  if (r.status === "new" && sinceCreated >= 1)
+    return "⏰ New for " + sinceCreated + (sinceCreated === 1 ? " day" : " days") + " — respond today!";
+  if ((r.status === "acknowledged" || r.status === "in_progress") && sinceUpdate >= 7)
+    return "⏰ No update for " + sinceUpdate + " days — post a progress note";
+  if (r.status === "escalated" && sinceUpdate >= 7)
+    return "⏰ Escalated " + sinceUpdate + " days ago — chase the municipality" +
+      (r.escalation_ref ? " (ref " + r.escalation_ref + ")" : "");
+  return null;
+}
