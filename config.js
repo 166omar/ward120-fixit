@@ -21,11 +21,13 @@ window.W120 = {
   // Per-category overrides: water, sewer, drain, road, light. "default" is the fallback.
   ESCALATION_EMAILS: {
     "City of Johannesburg": {
-      default: "joburgconnect@joburg.org.za",
-      water: "custserv@jwater.co.za",
-      sewer: "custserv@jwater.co.za",
-      drain: "hotline@jra.org.za",
-      road:  "hotline@jra.org.za"
+      default: "joburgconnect@joburg.org.za",     // Joburg Connect, 0860 562 874 (verified 10 Sept 2026)
+      water: "customer@jwater.co.za",              // Johannesburg Water customer services (verified)
+      sewer: "customer@jwater.co.za",
+      drain: "hotline@jra.org.za",                 // JRA hotline (verified)
+      road:  "hotline@jra.org.za",
+      light: "joburgconnect@joburg.org.za",        // City Power faults go via Joburg Connect / 0860 562 874 opt 2
+      dumping: "illegaldumping@pikitup.co.za"      // Pikitup illegal dumping (verified), 011 688 1500
     },
     "City of Tshwane":   { default: "customercare@tshwane.gov.za" },
     "City of Ekurhuleni": { default: "" },
