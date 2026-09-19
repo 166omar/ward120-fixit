@@ -125,7 +125,12 @@ function escalationEmail(r) {
 function escalationMailto(r) {
   const to = escalationEmail(r);
   const cat = (CATEGORIES[r.category] || CATEGORIES.other).label;
-  const subject = "Fault report " + r.ref + ": " + cat + " — " + r.area +
+  // Once the City has given us a reference, every follow-up must carry it in square
+  // brackets in the subject line — that is how their systems (Joburg Water's Forcelink
+  // especially) attach the mail to the open ticket. Without it, a follow-up is treated
+  // as a brand-new query and goes to the back of the queue.
+  const subject = (r.escalation_ref ? "[" + r.escalation_ref + "] " : "") +
+    "Fault report " + r.ref + ": " + cat + " — " + r.area +
     (r.municipality ? ", " + r.municipality : "");
   const body =
     "Good day\r\n\r\n" +
@@ -146,6 +151,43 @@ function escalationMailto(r) {
     "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
 }
 
+/* ---- Telling the reporter what happened (admin console) ----
+   A resident gave us their number so that we could come back to them about THEIR
+   OWN fault. That is the only thing it may ever be used for: it is never published,
+   never pasted into a WhatsApp group, and never exported into campaign material.
+   Returns "" when we have no number, so the button can hide itself. */
+function reporterWhatsApp(r) {
+  const digits = (r.reporter_phone || "").replace(/\D/g, "").replace(/^0/, "27");
+  if (!digits) return "";
+
+  const st = STATUSES[r.status] || STATUSES.new;
+  const cat = (CATEGORIES[r.category] || CATEGORIES.other).label.toLowerCase();
+  const firstName = (r.reporter_name || "").trim().split(/\s+/)[0];
+
+  // The public page lives next to admin.html, so this keeps working if the site
+  // later moves onto its own domain.
+  const site = location.href.replace(/admin\.html.*$/, "");
+
+  const lines = [
+    "Good day" + (firstName ? " " + firstName : "") + ",",
+    "",
+    "An update on the " + cat + " you reported in " + r.area + ":",
+    "",
+    "Your reference: " + r.ref,
+    "Status: " + st.public
+  ];
+  if (r.escalation_ref) lines.push("City reference: " + r.escalation_ref);
+  if (r.status_note) lines.push("", r.status_note);
+  lines.push(
+    "",
+    "Every report is listed publicly here, with the City's reference number: " + site,
+    "",
+    "Truth and Solidarity — Ward 120"
+  );
+
+  return "https://wa.me/" + digits + "?text=" + encodeURIComponent(lines.join("\n"));
+}
+
 /* ---- Follow-up alarms (admin console) ----
    Returns a reason string if the report needs attention, else null. */
 function needsAttention(r) {
@@ -154,6 +196,10 @@ function needsAttention(r) {
   const sinceUpdate = Math.floor((Date.now() - new Date(r.updated_at || r.created_at)) / dayMs);
   if (r.status === "new" && sinceCreated >= 1)
     return "⏰ New for " + sinceCreated + (sinceCreated === 1 ? " day" : " days") + " — respond today!";
+  // A resident who reports a fault and never hears back is the whole reason people
+  // stopped believing anyone. If we have their number, they get told.
+  if (r.reporter_phone && !r.notified_at && r.status !== "new" && sinceCreated >= 1)
+    return "🔔 The reporter has never been told anything — send them their reference";
   if ((r.status === "acknowledged" || r.status === "in_progress") && sinceUpdate >= 7)
     return "⏰ No update for " + sinceUpdate + " days — post a progress note";
   if (r.status === "escalated" && sinceUpdate >= 7)

@@ -1,0 +1,16 @@
+-- Fix Ward 120 — first real batch, logged 10 Sept 2026 from issues residents raised in the
+-- LS Service Delivery WhatsApp group (3–10 Sept) and at the shop. No reporter names or phones
+-- are stored (POPIA); descriptions name streets only. Coordinates = OSM street centrelines.
+-- Run via Supabase MCP execute_sql (service role bypasses RLS).
+
+insert into public.reports (category, description, area, lat, lng, municipality) values
+('light',   'Street lights not working along Cornwall Street. Raised by a resident on 9 Sept 2026. Needs a City Power public-lighting fault logged and a reference number.', 'Lenasia South', -26.39125, 27.85504, 'City of Johannesburg'),
+('other',   'Electricity off for a few houses in Mount Kulal Street on the evenings of 6 and 7 Sept 2026 (rest of the street on). No City Power reference obtained yet; the 011 375 5555 line was ringing unanswered on 7 Sept.', 'Lenasia South', -26.40323, 27.87088, 'City of Johannesburg'),
+('other',   'Single property without electricity since the night of 9 Sept 2026; a switch on the street''s green distribution box appears to have been cut out. City Power reference CP3 547020 already logged by the resident. Needs escalation and an ETA.', 'Lenasia South', -26.39200, 27.87000, 'City of Johannesburg'),
+('road',    'Potholes on Starling Street, Lenasia South. Raised with Omar Khan by a resident on 9 Sept 2026. To be logged with the JRA for a reference number and repair date.', 'Lenasia South', -26.37627, 27.84502, 'City of Johannesburg'),
+('road',    'Potholes on Bedford Street, Lenasia South. Raised with Omar Khan by a resident on 9 Sept 2026. To be logged with the JRA for a reference number and repair date.', 'Lenasia South', -26.39341, 27.84944, 'City of Johannesburg'),
+('dumping', 'Recurring illegal dumping site on Drakenstein Street. Cleaned by Blue Brigade volunteers on 8 Sept 2026; rubbish returns. Needs Pikitup enforcement and a skip point.', 'Lenasia South', -26.39656, 27.87463, 'City of Johannesburg'),
+('dumping', 'Recurring illegal dumping site on Ivy Road. Cleaned by Blue Brigade volunteers on 8 Sept 2026; rubbish returns. Needs Pikitup enforcement and a skip point.', 'Lenasia South', -26.38676, 27.85000, 'City of Johannesburg'),
+('dumping', 'Recurring illegal dumping site at Chester Close between Cambridge and Wellington. Cleaned by Blue Brigade volunteers on 8 Sept 2026; rubbish returns. Needs Pikitup enforcement and a skip point.', 'Lenasia South', -26.39628, 27.85285, 'City of Johannesburg'),
+('water',   'No water in Annapurna Place, Mount Logan Street and Witwatersrand Street from about 04:00 on 7 Sept 2026, restored by about 05:00. Recurring early-morning outages. Residents want the cause and the current supply-management schedule for the Lenasia High Level Reservoir zone.', 'Lenasia South', -26.39976, 27.85452, 'City of Johannesburg'),
+('water',   'Informal settlement on the western side of the railway line opposite Lenasia South: no municipal tanker delivery for about three weeks in Aug/Sept 2026; residents carry borehole water from the BP garage across the live line. Memorandum for a pipe wayleave sent to PRASA on 10 Sept 2026. Joburg Water asked for the tanker schedule.', 'Other / nearby', -26.38560, 27.83800, 'City of Johannesburg');

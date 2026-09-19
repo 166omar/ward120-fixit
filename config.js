@@ -22,8 +22,14 @@ window.W120 = {
   ESCALATION_EMAILS: {
     "City of Johannesburg": {
       default: "joburgconnect@joburg.org.za",     // Joburg Connect, 0860 562 874 (verified 10 Sept 2026)
-      water: "customer@jwater.co.za",              // Johannesburg Water customer services (verified)
-      sewer: "customer@jwater.co.za",
+      // ⚠️ customer@jwater.co.za is DEAD — it auto-replies "no longer valid" and the fault is lost.
+      // Rule (learned 15–16 Sept 2026): Joburg Water = fault@jwater.co.za until they name another
+      // address. E-mail alone does NOT issue a reference number: it auto-replies telling you to log
+      // the fault on the Forcelink portal (see docs/JW_PORTAL_STEPS.md). The portal is what gives a
+      // JWCC- reference. Follow up on an existing ticket by replying with the ref in the subject in
+      // square brackets, e.g. [JWCC-412345678].
+      water: "fault@jwater.co.za",                 // Johannesburg Water faults (verified 16 Sept 2026)
+      sewer: "fault@jwater.co.za",
       drain: "hotline@jra.org.za",                 // JRA hotline (verified)
       road:  "hotline@jra.org.za",
       light: "joburgconnect@joburg.org.za",        // City Power faults go via Joburg Connect / 0860 562 874 opt 2

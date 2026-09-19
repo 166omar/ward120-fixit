@@ -77,6 +77,12 @@ function render() {
     const st = STATUSES[r.status] || STATUSES.new;
     const attn = needsAttention(r);
     const phoneDigits = (r.reporter_phone || "").replace(/\D/g, "").replace(/^0/, "27");
+    const tellHref = reporterWhatsApp(r);
+    const toldDays = r.notified_at
+      ? Math.floor((Date.now() - new Date(r.notified_at)) / 86400000) : null;
+    const toldLabel = r.notified_at
+      ? "✅ reporter told " + (toldDays === 0 ? "today" : toldDays === 1 ? "yesterday" : toldDays + " days ago")
+      : (r.reporter_phone ? "🔔 <b>reporter not told yet</b>" : "");
     return '<div class="card acard" style="border-left-color:' + st.color + '" data-id="' + r.id + '">' +
       '<div class="top" style="display:flex;justify-content:space-between;align-items:center">' +
         '<b style="color:#0B6E4F">' + esc(r.ref) + "</b> " + statusBadge(r.status) + "</div>" +
@@ -91,7 +97,9 @@ function render() {
           " · " + esc(r.reporter_phone) +
           ' · <a href="tel:' + esc(r.reporter_phone) + '">call</a>' +
           (phoneDigits ? ' · <a href="https://wa.me/' + phoneDigits + '" target="_blank" rel="noopener">WhatsApp</a>' : "")
-          : " · no phone") + "</div>" +
+          : " · no phone") +
+        (toldLabel ? ' <span class="hint" style="display:block;margin-top:4px">' + toldLabel + "</span>" : "") +
+        "</div>" +
       '<div class="arow">' +
         '<div><label>Status</label><select class="eStatus">' +
           Object.keys(STATUSES).map(function (k) {
@@ -108,6 +116,9 @@ function render() {
         '<button class="btn small eSave">💾 Save update</button>' +
         '<a class="btn small second" href="' + escalationMailto(r) + '">📧 Escalate email' +
           (escalationEmail(r) ? "" : " (add address)") + "</a>" +
+        (tellHref
+          ? '<a class="btn small second eTell" href="' + tellHref + '" target="_blank" rel="noopener">📲 Tell the reporter</a>'
+          : "") +
       "</div>" +
     "</div>";
   }).join("");
@@ -171,6 +182,27 @@ document.getElementById("aWrap").addEventListener("click", async function (e) {
     console.error(err);
     toast("Save failed: " + (err.message || err), true);
     btn.disabled = false; btn.textContent = "💾 Save update";
+  }
+});
+
+/* ============ tell the reporter ============
+   Records that we came back to the person who reported the fault. Note what this
+   actually measures: that the WhatsApp chat was opened with the message ready, not
+   that it was definitely sent. It is a prompt so nobody is forgotten, not proof. */
+document.getElementById("aWrap").addEventListener("click", async function (e) {
+  const link = e.target.closest(".eTell"); if (!link) return;
+  // Deliberately no preventDefault — WhatsApp must still open in its own tab.
+  const id = link.closest(".acard").dataset.id;
+  try {
+    const res = await sb.from("reports")
+      .update({ notified_at: new Date().toISOString() })
+      .eq("id", id).select("ref").single();
+    if (res.error) throw res.error;
+    toast(res.data.ref + " → reporter told");
+    await load();
+  } catch (err) {
+    console.error(err);
+    toast("Could not record that the reporter was told: " + (err.message || err), true);
   }
 });
 

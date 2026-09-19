@@ -51,7 +51,39 @@ Only emails in `admin_emails` can update reports — anyone else who signs in ca
 4. What needs the municipality: report it to Joburg Water (0860 562 874) / JRA,
    set status **Escalated**, and paste their reference number — it is published on
    the report's page so residents can see you actually did it.
-5. Never delete, never hide. Slow progress with honest notes beats silence.
+5. **Tell the person who reported it.** Hit **📲 Tell the reporter** on the card — it opens
+   WhatsApp with their reference, the City's reference and the current status already
+   written. The card then shows when they were last told, and the **Attention** filter
+   lists anyone who has never been told. A resident who reports a fault and hears nothing
+   back is exactly why people stopped believing anyone.
+6. Never delete, never hide. Slow progress with honest notes beats silence.
+
+## When the site says "we can't reach the server"
+
+The Supabase free tier **pauses a project that sits idle** — it happened on 10 September 2026
+and the public page went blank. `.github/workflows/keepalive.yml` now pings the database every
+3 days to stop that, and fails loudly in the Actions tab if the database is unreachable.
+
+If it is already paused, wake it up:
+
+```bash
+curl -X POST -H "Authorization: Bearer $(cat ~/.supabase/access-token)" \
+  https://api.supabase.com/v1/projects/vzwkelixolmexgfkwoif/restore
+```
+
+It goes `COMING_UP` → `ACTIVE_HEALTHY` in 1–2 minutes. Then re-run the keep-alive workflow
+from the Actions tab to confirm.
+
+> One trap: a tool that cannot run JavaScript (curl, a link preview, most "fetch this page"
+> tools) will report the site as broken even when it is perfectly healthy, because it exposes
+> the hidden `#offlineBanner`. **Always check in a real browser before panicking.**
+
+## Joburg Water is a special case
+
+E-mail alone gets you **no reference number** — see `docs/JW_PORTAL_STEPS.md`. `customer@jwater.co.za`
+is dead; use `fault@jwater.co.za`, and log the fault on the Forcelink portal to get a `JWCC-`
+reference. Follow-ups must carry the reference in square brackets in the subject line — the
+Escalate button now does this automatically once `escalation_ref` is filled in.
 
 ## Changing things
 

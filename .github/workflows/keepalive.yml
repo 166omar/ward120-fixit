@@ -1,0 +1,49 @@
+name: Keep Supabase awake
+
+# The Supabase free tier PAUSES a project that sits idle, and when it does the public
+# site shows "We can't reach the server" and every report disappears. That already
+# happened on 10 September 2026. This ping keeps the project warm.
+#
+# It reads the URL and anon key straight out of config.js so there is only ever one
+# copy of them. The anon key is public by design — the database column grants are what
+# protect reporter names and phone numbers, not secrecy of the key.
+
+on:
+  schedule:
+    - cron: "17 6 */3 * *"   # every 3 days, 06:17 UTC (08:17 SAST)
+  workflow_dispatch:          # lets you run it by hand from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read Supabase settings from config.js
+        id: cfg
+        run: |
+          URL=$(grep -oP 'SUPABASE_URL:\s*"\K[^"]+' config.js)
+          KEY=$(grep -oP 'SUPABASE_ANON_KEY:\s*"\K[^"]+' config.js)
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then
+            echo "::error::Could not read SUPABASE_URL / SUPABASE_ANON_KEY out of config.js"
+            exit 1
+          fi
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "::add-mask::$KEY"
+          echo "key=$KEY" >> "$GITHUB_OUTPUT"
+
+      - name: Ping the reports table
+        run: |
+          CODE=$(curl -s -o /tmp/body.txt -w "%{http_code}" --max-time 30 \
+            -H "apikey: ${{ steps.cfg.outputs.key }}" \
+            -H "Authorization: Bearer ${{ steps.cfg.outputs.key }}" \
+            "${{ steps.cfg.outputs.url }}/rest/v1/reports?select=ref&limit=1")
+
+          echo "HTTP $CODE"
+          if [ "$CODE" != "200" ]; then
+            echo "::error::Supabase is not answering (HTTP $CODE). The public site is probably showing 'we can't reach the server'."
+            echo "::error::If the project is PAUSED, restore it with the command in README.md, then re-run this workflow."
+            head -c 500 /tmp/body.txt
+            exit 1
+          fi
+          echo "Supabase is awake. Fix Ward 120 is serving reports."

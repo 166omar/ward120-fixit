@@ -1,0 +1,18 @@
+# ⚠️ THIS REPOSITORY IS PUBLIC. Anything committed here is readable by anyone,
+# including the DA and the ANC. Keep resident data out of it.
+
+# Database exports contain reporter_name and reporter_phone where residents gave them.
+# POPIA: never publish those, never paste them into a WhatsApp group, never put them
+# into campaign material. Keep exports on the machine only.
+export/
+*_export_*.csv
+*_export_*.json
+
+# Internal operating notes: Gmail message ids, admin addresses, restore commands.
+HANDOVER.md
+NOTES_from_memory.md
+FIX_WARD_120
+
+# Local noise
+.DS_Store
+Thumbs.db
