@@ -11,27 +11,34 @@ nothing to show. Water is the biggest issue in the ward.
 
 ---
 
-## Part 1 — Omar registers (about 5 minutes, once)
+## Part 1 — Use the link Joburg Water already sent us
 
-Only Omar can do this. I am not able to create accounts or set passwords on his behalf.
+**You do not have to register first.** We assumed you did; their own reply proves otherwise.
 
-1. Go to **https://customer.forcelink.net/joburg_water/login**
-2. Look for the option to **register / sign up** as a new customer (it sits on or beside the
-   login box). If the page looks blank at first, give it a few seconds — it is a slow-loading
-   app, not a broken link.
-3. Register with:
-   - **Your mobile number** — use the same number the campaign uses, since replies and SMS
-     notifications go there.
-   - **A password you choose.** Write it into `Documents\Khans Invoicing LOGIN.txt` with the
-     other credentials, or wherever you keep them. Do not send it to me in chat.
-   - Your **e-mail**: `166omar@gmail.com`, so confirmations land where we already search for
-     reference numbers.
-4. Confirm the account (expect an SMS or e-mail one-time code).
-5. Tell me when you are in — **on your go**, I will fill the fault forms with you logged in.
+On **15 September at 20:08**, `fault@jwater.co.za` replied to our water e-mails with the
+subject *"Action Required: Please Provide Details to complete the logging of your Johannesburg
+Water Technical Fault."* It contains a **LOG A TECHNICAL FAULT** button. That button is the
+thing that issues a reference number — and it opens the form in **anonymous mode**, so it can
+be completed without an account. Registration is offered *afterwards*, not before.
 
-> If registration refuses your number or the site is down, fall back to the call centre on
-> **0860 562 874** and ask them to log the fault and read you the reference. A reference from
-> the phone is worth exactly as much as one from the portal.
+That e-mail sat unread in the inbox from 15 to 19 September. It is the whole reason TS-0009 and
+TS-0010 still have no reference.
+
+1. Open that e-mail in Gmail (search: `from:fault@jwater.co.za "Action Required"`).
+2. Click **LOG A TECHNICAL FAULT**. It goes to
+   `customer.forcelink.net/joburg_water/logFaultOtherAddress` — verified genuine, it is the
+   City's Forcelink system. The link carries a token tied to `166omar@gmail.com`, so treat it
+   as personal: do not post it in a group.
+3. Complete **every** required field — their notice says a fault is only logged, and a
+   reference only issued, if all required details are submitted. Account and meter numbers are
+   *not* required, only recommended.
+4. Write down the reference it gives you (`JWCC-4…`, `JWAPP-4…` or `COJ-8…`) and send it to me.
+5. Registering afterwards is worth doing — it gives 24/7 logging and faster follow-ups — but it
+   is **not** a blocker for these two faults.
+
+> If the form refuses to submit or the site is down, phone **0860 562 874**, ask them to log the
+> fault, and get the reference read out to you. A reference from the phone is worth exactly as
+> much as one from the portal.
 
 ---
 
@@ -62,14 +69,22 @@ proof no rival in this ward can produce.
 
 ## Part 4 — Chasing an existing ticket
 
-Reply to the thread with the reference in the subject line **in square brackets**:
+Reply to the thread with the reference in the subject line **in square brackets** — this is
+quoted directly from their 15 September notice:
 
 ```
-Subject: [JWCC-412345678] Follow-up — no water, Annapurna Place, Lenasia South
+Subject: I have no water [JWCC-412345678]
 ```
+
+Valid reference shapes: `[JWCC-4xxxxxxxx]`, `[JWAPP-4xxxxxxxx]` or `[COJ-800000000]`.
 
 That is how their system links a follow-up to the open ticket. Without the brackets it is
-treated as a brand-new query and goes to the back of the queue.
+treated as a brand-new query and goes to the back of the queue. The **📧 Escalate email**
+button in the console now adds the brackets automatically once `escalation_ref` is filled in.
+
+Do not expect a human reply to `fault@jwater.co.za` — it states plainly that it is automated
+and cannot respond to replies. The portal and the phone line are the only two routes that
+produce a reference.
 
 ## Also open with Joburg Water
 
