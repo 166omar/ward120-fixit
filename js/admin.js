@@ -6,6 +6,7 @@ let all = [];
 let vols = [];
 let aFilter = "open";
 let sFilter = "all";          // which site's reports are shown
+let bot = null;               // the fault bot: switch position and its e-mails
 
 /* ============ auth ============ */
 document.getElementById("btnLogin").addEventListener("click", login);
@@ -43,6 +44,13 @@ async function load() {
   all = res.data;
   const vres = await sb.from("volunteers").select("*").order("created_at", { ascending: false }).limit(2000);
   vols = vres.error ? [] : vres.data;
+  const bres = await sb.rpc("admin_bot");
+  bot = bres.error ? null : bres.data;
+  const botBtn = document.querySelector('#aFilters [data-f="bot"]');
+  if (botBtn && bot) {
+    const n = bot.outbox.filter(function (o) { return o.state === "waiting" || o.state === "needs_person" || o.state === "failed"; }).length;
+    botBtn.textContent = "🤖 Bot" + (n ? " (" + n + ")" : "");
+  }
   document.getElementById("sNew").textContent = all.filter(function (r) { return r.status === "new" || r.status === "acknowledged"; }).length;
   document.getElementById("sBusy").textContent = all.filter(function (r) { return r.status === "in_progress" || r.status === "escalated"; }).length;
   document.getElementById("sFixed").textContent = all.filter(function (r) { return r.status === "fixed"; }).length;
@@ -87,6 +95,7 @@ function rows() {
 function render() {
   const wrap = document.getElementById("aWrap");
   if (aFilter === "volunteers") { renderVolunteers(wrap); return; }
+  if (aFilter === "bot") { renderBot(wrap); return; }
   const list = rows();
   if (!list.length) { wrap.innerHTML = '<div class="card"><p style="text-align:center;color:#66736E">Nothing here.</p></div>'; return; }
   wrap.innerHTML = list.map(function (r) {
@@ -146,6 +155,85 @@ function render() {
     "</div>";
   }).join("");
 }
+
+/* ============ the fault bot ============
+   The bot writes the e-mail to the City for every new report from the sites it looks after.
+   Switch on "One tap": nothing leaves until someone here presses Approve.
+   Switch on "Automatic": e-mails are approved by themselves.
+   A worker sends what is approved, reads the City's replies and saves their reference. */
+const OUT_STATES = {
+  waiting:      { label: "Waiting for a yes", color: "#E67E22" },
+  approved:     { label: "Approved, will be sent", color: "#1B5E8C" },
+  sending:      { label: "Being sent", color: "#1B5E8C" },
+  sent:         { label: "Sent", color: "#0B6E4F" },
+  failed:       { label: "Failed", color: "#D64545" },
+  rejected:     { label: "Rejected", color: "#7F8C8D" },
+  needs_person: { label: "Needs a person", color: "#8E44AD" }
+};
+
+function renderBot(wrap) {
+  if (!bot) { wrap.innerHTML = '<div class="card"><p>The bot panel could not load.</p></div>'; return; }
+  const auto = bot.mode === "auto";
+  const head =
+    '<div class="card"><h2 style="margin-top:0">🤖 Fault bot</h2>' +
+    '<p>Looks after reports from: <b>' + esc((bot.sources || []).join(", ")) + "</b></p>" +
+    '<div class="filters" style="margin:10px 0">' +
+      '<button class="bMode' + (auto ? "" : " on") + '" data-m="approve">One tap: I approve each e-mail</button>' +
+      '<button class="bMode' + (auto ? " on" : "") + '" data-m="auto">Automatic</button>' +
+    "</div>" +
+    '<p class="hint">' + (auto
+      ? "Automatic: every new report is e-mailed to the City by itself."
+      : "One tap: nothing goes to the City until you press Approve below.") + "</p>" +
+    (bot.tests_left > 0 ? '<div class="banner" style="margin:8px 0">The next ' + bot.tests_left +
+      " approved e-mail" + (bot.tests_left === 1 ? "" : "s") + " go to <b>" + esc(bot.test_to) +
+      "</b> first as a test copy. Read it, then approve again to send it to the City.</div>" : "") +
+    '<button class="btn small second bPause">' + (bot.paused ? "▶ Start the bot again" : "⏸ Pause the bot") + "</button>" +
+    (bot.paused ? ' <b style="color:#D64545">The bot is paused.</b>' : "") +
+    (bot.worker_ready ? "" : '<div class="banner" style="margin:8px 0">The sending worker is not set up yet.</div>') +
+    "</div>";
+  const list = (bot.outbox || []).map(function (o) {
+    const st = OUT_STATES[o.state] || OUT_STATES.waiting;
+    const portal = (o.reason || "").match(/https?:\/\/\S+/);
+    return '<div class="card acard" style="border-left-color:' + st.color + '" data-out="' + o.id + '">' +
+      '<div class="top" style="display:flex;justify-content:space-between;align-items:center">' +
+        "<span><b>" + esc(o.ref) + "</b> " + sourceBadge(o) + (o.kind === "chase" ? ' <span class="badge" style="background:#7F8C8D">Follow-up</span>' : "") + "</span>" +
+        '<span class="badge" style="background:' + st.color + '">' + esc(st.label) + "</span></div>" +
+      '<p style="margin:6px 0"><b>To:</b> ' + esc(o.department || "") + (o.to_email ? " · " + esc(o.to_email) : "") + "</p>" +
+      '<p style="margin:6px 0"><b>Subject:</b> ' + esc(o.subject) + "</p>" +
+      (o.reason ? '<div class="banner" style="margin:8px 0">' + esc(o.reason) + "</div>" : "") +
+      '<details><summary>Read the e-mail</summary><pre style="white-space:pre-wrap;font:inherit;margin:8px 0">' + esc(o.body) + "</pre></details>" +
+      '<div class="hint">Written ' + fmtDate(o.created_at) + (o.sent_at ? " · sent " + fmtDate(o.sent_at) : "") + "</div>" +
+      '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
+        (o.to_email && (o.state === "waiting" || o.state === "failed") ? '<button class="btn small bAct" data-a="approve">✅ Approve and send</button>' : "") +
+        (o.state === "needs_person" && portal ? '<a class="btn small second" href="' + esc(portal[0].replace(/[.,]$/, "")) + '" target="_blank" rel="noopener">Open the portal</a>' : "") +
+        (o.state === "needs_person" ? '<button class="btn small bAct" data-a="done">✔ I logged it myself</button>' : "") +
+        (["waiting", "approved", "failed", "needs_person"].indexOf(o.state) >= 0 ? '<button class="btn small second bAct" data-a="reject">✖ Do not send</button>' : "") +
+      "</div></div>";
+  }).join("");
+  wrap.innerHTML = head + (list || '<div class="card"><p style="text-align:center;color:#66736E">No e-mails yet. The first report from the site will show here.</p></div>');
+}
+
+document.getElementById("aWrap").addEventListener("click", async function (e) {
+  const mode = e.target.closest(".bMode"), pause = e.target.closest(".bPause"), act = e.target.closest(".bAct");
+  if (!mode && !pause && !act) return;
+  try {
+    let res;
+    if (mode) {
+      if (mode.dataset.m === "auto" && !confirm("Switch to Automatic? Every new report will be e-mailed to the City without anyone reading it first, and everything that is waiting now will be sent.")) return;
+      res = await sb.rpc("admin_bot_mode", { p_mode: mode.dataset.m, p_paused: null });
+    } else if (pause) {
+      res = await sb.rpc("admin_bot_mode", { p_mode: null, p_paused: !bot.paused });
+    } else {
+      res = await sb.rpc("admin_outbox_set", { p_id: Number(act.closest("[data-out]").dataset.out), p_action: act.dataset.a });
+    }
+    if (res.error) throw res.error;
+    toast(mode ? "Switch changed" : pause ? "Done" : act.dataset.a === "approve" ? "Approved. It goes out with the next run." : "Done");
+    await load();
+  } catch (err) {
+    console.error(err);
+    toast("That did not work: " + (err.message || err), true);
+  }
+});
 
 /* ============ volunteers ============ */
 function renderVolunteers(wrap) {
