@@ -138,6 +138,7 @@ document.getElementById("btnSubmit").addEventListener("click", async function ()
     };
     const muniEl = document.getElementById("fMuni"); // Gauteng-wide site only
     if (muniEl) row.municipality = muniEl.value;
+    row.source = W120.SOURCE || "ward120";           // which site this report was made on
     const res = await sb.from("reports").insert(row).select("ref").single();
     if (res.error) throw res.error;
     showSuccess(res.data.ref);
@@ -178,6 +179,7 @@ async function loadReports() {
   try {
     const res = await sb.from("reports")
       .select(PUBLIC_COLUMNS)
+      .in("source", W120.SOURCES_SHOWN || ["ward120", "gauteng"])   // never the town site's reports
       .order("created_at", { ascending: false })
       .limit(500);
     if (res.error) throw res.error;

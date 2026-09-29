@@ -151,7 +151,9 @@ begin
       created_at, updated_at)
     values ('00000000-0000-0000-0000-000000000000', uid, 'authenticated', 'authenticated',
       '166omar@gmail.com',
-      extensions.crypt('W120-Truth!2026', extensions.gen_salt('bf')),
+      -- The first password that stood here was published with this repo, so it was
+      -- retired on 2026-09-29. Set a password in the Supabase dashboard instead.
+      extensions.crypt('<SET-A-PASSWORD-IN-THE-DASHBOARD>', extensions.gen_salt('bf')),
       now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb,
       '', '', '', '', now(), now());
     insert into auth.identities (id, user_id, provider_id, identity_data, provider,

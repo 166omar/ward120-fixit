@@ -5,6 +5,7 @@ const sb = w120Client();
 let all = [];
 let vols = [];
 let aFilter = "open";
+let sFilter = "all";          // which site's reports are shown
 
 /* ============ auth ============ */
 document.getElementById("btnLogin").addEventListener("click", login);
@@ -35,7 +36,9 @@ async function enterConsole() {
 
 /* ============ data ============ */
 async function load() {
-  const res = await sb.from("reports").select("*").order("created_at", { ascending: false }).limit(1000);
+  // Names and phone numbers come only through this function, which refuses anyone who is
+  // not on the team list (migration 005). A plain table read no longer returns them.
+  const res = await sb.rpc("admin_reports");
   if (res.error) { toast("Load failed: " + res.error.message, true); return; }
   all = res.data;
   const vres = await sb.from("volunteers").select("*").order("created_at", { ascending: false }).limit(2000);
@@ -60,11 +63,25 @@ document.getElementById("aFilters").addEventListener("click", function (e) {
   render();
 });
 
+const sFilters = document.getElementById("sFilters");
+if (sFilters) sFilters.addEventListener("click", function (e) {
+  const b = e.target.closest("button"); if (!b) return;
+  this.querySelectorAll("button").forEach(function (x) { x.classList.remove("on"); });
+  b.classList.add("on");
+  sFilter = b.dataset.s;
+  render();
+});
+
+function fromSite() {
+  return sFilter === "all" ? all : all.filter(function (r) { return (r.source || "ward120") === sFilter; });
+}
+
 function rows() {
-  if (aFilter === "all") return all;
-  if (aFilter === "open") return all.filter(function (r) { return ["new", "acknowledged", "in_progress", "escalated"].indexOf(r.status) >= 0; });
-  if (aFilter === "attention") return all.filter(function (r) { return needsAttention(r); });
-  return all.filter(function (r) { return r.status === aFilter; });
+  const base = fromSite();
+  if (aFilter === "all") return base;
+  if (aFilter === "open") return base.filter(function (r) { return ["new", "acknowledged", "in_progress", "escalated"].indexOf(r.status) >= 0; });
+  if (aFilter === "attention") return base.filter(function (r) { return needsAttention(r); });
+  return base.filter(function (r) { return r.status === aFilter; });
 }
 
 function render() {
@@ -85,7 +102,9 @@ function render() {
       : (r.reporter_phone ? "🔔 <b>reporter not told yet</b>" : "");
     return '<div class="card acard" style="border-left-color:' + st.color + '" data-id="' + r.id + '">' +
       '<div class="top" style="display:flex;justify-content:space-between;align-items:center">' +
-        '<b style="color:#0B6E4F">' + esc(r.ref) + "</b> " + statusBadge(r.status) + "</div>" +
+        '<span><b style="color:#0B6E4F">' + esc(r.ref) + "</b> " + sourceBadge(r) +
+          (r.hidden ? ' <span class="badge" style="background:#7F8C8D">Hidden from public</span>' : "") +
+        "</span> " + statusBadge(r.status) + "</div>" +
       (attn ? '<div class="banner" style="margin:8px 0">' + esc(attn) + "</div>" : "") +
       '<p style="margin:6px 0">' + cat.emoji + " " + esc(r.description) + "</p>" +
       '<div class="hint">' + placeLabel(r) + " · " + fmtDate(r.created_at) + " · 🙋 " + r.supports +
@@ -118,6 +137,10 @@ function render() {
           (escalationEmail(r) ? "" : " (add address)") + "</a>" +
         (tellHref
           ? '<a class="btn small second eTell" href="' + tellHref + '" target="_blank" rel="noopener">📲 Tell the reporter</a>'
+          : "") +
+        '<button class="btn small second eHide">' + (r.hidden ? "👁 Show on the site again" : "🙈 Hide from public") + "</button>" +
+        (r.reporter_name || r.reporter_phone
+          ? '<button class="btn small second eForget">🧹 Forget reporter’s details</button>'
           : "") +
       "</div>" +
     "</div>";
@@ -206,11 +229,38 @@ document.getElementById("aWrap").addEventListener("click", async function (e) {
   }
 });
 
-/* ============ CSV export ============ */
+/* ============ hide / forget ============ */
+document.getElementById("aWrap").addEventListener("click", async function (e) {
+  const hide = e.target.closest(".eHide"), forget = e.target.closest(".eForget");
+  if (!hide && !forget) return;
+  const id = (hide || forget).closest(".acard").dataset.id;
+  const r = all.filter(function (x) { return x.id === id; })[0]; if (!r) return;
+  try {
+    if (hide) {
+      const res = await sb.from("reports").update({ hidden: !r.hidden }).eq("id", id).select("ref").single();
+      if (res.error) throw res.error;
+      toast(res.data.ref + (r.hidden ? " is public again" : " is hidden from the public"));
+    } else {
+      if (!confirm("Remove the name and phone number from " + r.ref + "? This cannot be undone.")) return;
+      const res = await sb.rpc("admin_forget_reporter", { p_report: id });
+      if (res.error) throw res.error;
+      toast(r.ref + " → reporter’s details removed");
+    }
+    await load();
+  } catch (err) {
+    console.error(err);
+    toast("That did not work: " + (err.message || err), true);
+  }
+});
+
+/* ============ CSV export ============
+   One site at a time, so the numbers of people who reported on the neutral town site
+   never end up in the same sheet as party contacts. */
 document.getElementById("btnCsv").addEventListener("click", function () {
-  const cols = ["ref", "category", "status", "description", "area", "municipality", "lat", "lng",
+  if (sFilter === "all") { toast("Choose one site first (the row of site buttons), then export", true); return; }
+  const cols = ["ref", "source", "category", "status", "description", "area", "municipality", "lat", "lng",
     "reporter_name", "reporter_phone", "escalation_ref", "supports", "created_at", "fixed_at"];
-  const lines = [cols.join(",")].concat(all.map(function (r) {
+  const lines = [cols.join(",")].concat(fromSite().map(function (r) {
     return cols.map(function (c) {
       return '"' + String(r[c] == null ? "" : r[c]).replace(/"/g, '""') + '"';
     }).join(",");
@@ -218,7 +268,7 @@ document.getElementById("btnCsv").addEventListener("click", function () {
   const blob = new Blob([lines.join("\r\n")], { type: "text/csv" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "ward120-reports-" + new Date().toISOString().slice(0, 10) + ".csv";
+  a.download = sFilter + "-reports-" + new Date().toISOString().slice(0, 10) + ".csv";
   a.click();
   URL.revokeObjectURL(a.href);
 });

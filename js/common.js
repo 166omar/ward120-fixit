@@ -9,7 +9,7 @@ function w120Client() {
 /* Anon role may only read these columns (reporter name/phone are blocked by the DB).
    Never use select('*') on the public page. */
 const PUBLIC_COLUMNS =
-  "id,ref,category,description,area,municipality,lat,lng,photo_url,status,status_note," +
+  "id,ref,source,category,description,area,municipality,lat,lng,photo_url,status,status_note," +
   "escalation_ref,fixed_photo_url,fixed_at,supports,created_at,updated_at";
 
 /* "Vlakfontein · City of Johannesburg" — used on cards and detail views */
@@ -35,6 +35,38 @@ const STATUSES = {
   fixed:        { label: "Fixed",          color: "#0B6E4F", public: "Fixed ✔" },
   closed:       { label: "Closed",         color: "#7F8C8D", public: "Closed" }
 };
+
+/* Where a report came from (column "source").
+   lenzsouth.co.za is the town's neutral website: nothing that leaves the console for one
+   of ITS reports may carry a party name, and its reporters' numbers are never mixed with
+   party contacts. */
+const SOURCES = {
+  ward120: {
+    label: "Fix Ward 120", color: "#0B6E4F",
+    link: function () { return "https://166omar.github.io/ward120-fixit/"; },
+    tracked: "This fault is tracked publicly by the Truth and Solidarity community project.",
+    signoff: "Truth and Solidarity", waSign: "Truth and Solidarity — Ward 120"
+  },
+  gauteng: {
+    label: "Gauteng", color: "#1B5E8C",
+    link: function () { return "https://166omar.github.io/truth-gauteng/"; },
+    tracked: "This fault is tracked publicly by the Truth and Solidarity community project.",
+    signoff: "Truth and Solidarity", waSign: "Truth and Solidarity — Gauteng"
+  },
+  lenzsouth: {
+    label: "lenzsouth.co.za", color: "#B45309",
+    link: function (r) { return "https://lenzsouth.co.za/report/?ref=" + encodeURIComponent(r.ref); },
+    tracked: "This fault is listed publicly on lenzsouth.co.za, the Lenasia South community website.",
+    signoff: "Omar Khan\r\nKhan's Butchery, Lenasia South", waSign: "Omar Khan, Khan's Butchery"
+  }
+};
+
+function sourceOf(r) { return SOURCES[r.source] || SOURCES.ward120; }
+
+function sourceBadge(r) {
+  const s = sourceOf(r);
+  return '<span class="badge" style="background:' + s.color + '">' + esc(s.label) + "</span>";
+}
 
 /* Escape everything that came from users before putting it in HTML */
 function esc(s) {
@@ -144,9 +176,9 @@ function escalationMailto(r) {
     (r.photo_url ? "Photo: " + r.photo_url + "\r\n" : "") +
     "First reported: " + new Date(r.created_at).toLocaleDateString("en-ZA") + "\r\n" +
     "Community reference: " + r.ref + "\r\n\r\n" +
-    "This fault is tracked publicly by the Truth and Solidarity community project. " +
+    sourceOf(r).tracked + " " +
     "Kindly reply with your reference number so we can publish it for residents.\r\n\r\n" +
-    "Thank you\r\nTruth and Solidarity";
+    "Thank you\r\n" + sourceOf(r).signoff;
   return "mailto:" + encodeURIComponent(to) +
     "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
 }
@@ -164,9 +196,8 @@ function reporterWhatsApp(r) {
   const cat = (CATEGORIES[r.category] || CATEGORIES.other).label.toLowerCase();
   const firstName = (r.reporter_name || "").trim().split(/\s+/)[0];
 
-  // The public page lives next to admin.html, so this keeps working if the site
-  // later moves onto its own domain.
-  const site = location.href.replace(/admin\.html.*$/, "");
+  // Each report links back to the site it was made on.
+  const site = sourceOf(r).link(r);
 
   const lines = [
     "Good day" + (firstName ? " " + firstName : "") + ",",
@@ -180,9 +211,9 @@ function reporterWhatsApp(r) {
   if (r.status_note) lines.push("", r.status_note);
   lines.push(
     "",
-    "Every report is listed publicly here, with the City's reference number: " + site,
+    "Follow your report here, with the City's reference number: " + site,
     "",
-    "Truth and Solidarity — Ward 120"
+    sourceOf(r).waSign
   );
 
   return "https://wa.me/" + digits + "?text=" + encodeURIComponent(lines.join("\n"));
