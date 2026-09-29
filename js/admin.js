@@ -189,7 +189,8 @@ function renderBot(wrap) {
       "</b> first as a test copy. Read it, then approve again to send it to the City.</div>" : "") +
     '<button class="btn small second bPause">' + (bot.paused ? "▶ Start the bot again" : "⏸ Pause the bot") + "</button>" +
     (bot.paused ? ' <b style="color:#D64545">The bot is paused.</b>' : "") +
-    (bot.worker_ready ? "" : '<div class="banner" style="margin:8px 0">The sending worker is not set up yet.</div>') +
+    (bot.worker_ready ? "" : '<div class="banner" style="margin:8px 0"><b>The sender is not switched on.</b> Approved e-mails wait here and nothing goes out by itself.' +
+      (bot.worker_seen ? " It last ran " + fmtDate(bot.worker_seen) + "." : "") + "</div>") +
     "</div>";
   const list = (bot.outbox || []).map(function (o) {
     const st = OUT_STATES[o.state] || OUT_STATES.waiting;
@@ -227,7 +228,7 @@ document.getElementById("aWrap").addEventListener("click", async function (e) {
       res = await sb.rpc("admin_outbox_set", { p_id: Number(act.closest("[data-out]").dataset.out), p_action: act.dataset.a });
     }
     if (res.error) throw res.error;
-    toast(mode ? "Switch changed" : pause ? "Done" : act.dataset.a === "approve" ? "Approved. It goes out with the next run." : "Done");
+    toast(mode ? "Switch changed" : pause ? "Done" : act.dataset.a === "approve" ? (bot.worker_ready ? "Approved. It goes out with the next run." : "Approved. It waits until the sender is switched on.") : "Done");
     await load();
   } catch (err) {
     console.error(err);
