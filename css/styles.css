@@ -43,6 +43,10 @@ a { color: var(--green); }
 .counter span { font-size: 11px; opacity: .85; }
 .counter.fixed b { color: #7FE0B5; }
 .counter.busy b { color: var(--amber); }
+.chase { margin: 0; padding: 0 12px 8px; text-align: center; font-size: 12.5px; color: #fff; background: var(--green-dark); }
+.chase:empty { display: none; }
+.refbadge { display: inline-block; margin-top: 6px; font-size: 12.5px; padding: 3px 9px; border-radius: 999px; background: #E3F4EC; color: #0B3D2E; }
+.refbadge.wait { background: #FFF4E0; color: #7A4B00; }
 
 /* ---------- bottom tabs ---------- */
 .tabs {

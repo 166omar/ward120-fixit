@@ -15,7 +15,7 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/styles.css?v=7">
 </head>
 <body>
 
@@ -25,9 +25,10 @@
 </header>
 <div class="counters" id="counters">
   <div class="counter"><b id="cOpen">–</b><span>Reported</span></div>
-  <div class="counter busy"><b id="cBusy">–</b><span>Being fixed</span></div>
+  <div class="counter busy"><b id="cBusy">–</b><span>City ref. no.</span></div>
   <div class="counter fixed"><b id="cFixed">–</b><span>Fixed ✔</span></div>
 </div>
+<p class="chase" id="chaseLine" aria-live="polite"></p>
 
 <main class="shell">
 
@@ -89,7 +90,7 @@
   <div class="card" style="padding:10px">
     <div id="bigMap"></div>
     <div class="hint" style="margin-top:8px">
-      🔴 reported &nbsp; 🟠 being fixed / escalated &nbsp; 🟢 fixed
+      🔴 reported &nbsp; 🟠 escalated to the City &nbsp; 🟢 fixed
     </div>
   </div>
 </section>
@@ -212,7 +213,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="config.js?v=6"></script>
-<script src="js/common.js?v=6"></script>
-<script src="js/app.js?v=6"></script>
+<script src="js/common.js?v=7"></script>
+<script src="js/app.js?v=7"></script>
 </body>
 </html>

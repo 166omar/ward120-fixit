@@ -192,13 +192,26 @@ async function loadReports() {
   }
 }
 
+/* Honest numbers only: "Reported" = every report on this site; "City ref. no." = reports the City has given a
+   reference number for; "Fixed" = status fixed. A report with no City reference is shown as still being chased. */
+function hasCityRef(r) { return !!(r.escalation_ref && String(r.escalation_ref).trim()); }
+function daysOpen(r) { return Math.max(0, Math.floor((Date.now() - new Date(r.created_at).getTime()) / 86400000)); }
+function isOpen(r) { return r.status !== "fixed" && r.status !== "closed"; }
+
 function renderCounters() {
-  const open = state.reports.filter(function (r) { return r.status === "new" || r.status === "acknowledged"; }).length;
-  const busy = state.reports.filter(function (r) { return r.status === "in_progress" || r.status === "escalated"; }).length;
+  const total = state.reports.length;
+  const withRef = state.reports.filter(hasCityRef).length;
   const fixed = state.reports.filter(function (r) { return r.status === "fixed"; }).length;
-  document.getElementById("cOpen").textContent = open;
-  document.getElementById("cBusy").textContent = busy;
+  document.getElementById("cOpen").textContent = total;
+  document.getElementById("cBusy").textContent = withRef;
   document.getElementById("cFixed").textContent = fixed;
+  const waiting = state.reports.filter(function (r) { return isOpen(r) && !hasCityRef(r); });
+  const line = document.getElementById("chaseLine");
+  if (!total) { line.textContent = ""; return; }
+  if (!waiting.length) { line.textContent = "Every open report has a City reference number."; return; }
+  const oldest = Math.max.apply(null, waiting.map(daysOpen));
+  line.textContent = waiting.length + " of " + total + " still waiting for a City reference number. Oldest: " + oldest +
+    (oldest === 1 ? " day." : " days.") + " We are chasing them.";
 }
 
 /* ================= list ================= */
@@ -219,6 +232,13 @@ function filtered() {
   });
 }
 
+function refBadge(r) {
+  if (hasCityRef(r)) return '<div class="refbadge">🏛️ City reference <b>' + esc(r.escalation_ref) + "</b></div>";
+  if (!isOpen(r)) return "";
+  const d = daysOpen(r);
+  return '<div class="refbadge wait">⏳ No City reference yet · day ' + d + "</div>";
+}
+
 function renderList() {
   const wrap = document.getElementById("listWrap");
   const rows = filtered();
@@ -235,6 +255,7 @@ function renderList() {
         '<div class="top"><span class="ref">' + esc(r.ref) + "</span>" + statusBadge(r.status) + "</div>" +
         '<div class="desc">' + esc(r.description) + "</div>" +
         '<div class="meta">' + placeLabel(r) + " · " + timeAgo(r.created_at) + "</div>" +
+        refBadge(r) +
         '<button type="button" class="support' + (done ? " done" : "") + '" data-sup="' + r.id + '">' +
           "🙋 Me too" + (r.supports > 0 ? " · " + r.supports : "") + "</button>" +
       "</div></div>";
@@ -278,8 +299,9 @@ async function openDetail(id) {
     (r.photo_url ? '<p><img src="' + esc(r.photo_url) + '" alt="report photo" style="border-radius:10px"></p>' : "") +
     "<p>" + esc(r.description) + "</p>" +
     '<p class="hint">' + placeLabel(r) + " · reported " + fmtDate(r.created_at) + " · 🙋 " + r.supports + " affected</p>" +
-    (r.escalation_ref ?
-      '<div class="banner">🏛️ Escalated to the municipality — reference <b>' + esc(r.escalation_ref) + "</b></div>" : "") +
+    (hasCityRef(r) ?
+      '<div class="banner">🏛️ Escalated to the municipality — reference <b>' + esc(r.escalation_ref) + "</b></div>" :
+      (isOpen(r) ? '<div class="banner" style="background:#FFF4E0;color:#7A4B00">⏳ The City has not given us a reference number yet. Day ' + daysOpen(r) + ". We are chasing it and will publish it here.</div>" : "")) +
     (r.fixed_photo_url ?
       '<div class="beforeafter"><div><div class="lbl">Before</div>' +
       (r.photo_url ? '<img src="' + esc(r.photo_url) + '" alt="before">' : '<p class="hint">no photo</p>') +
