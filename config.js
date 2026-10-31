@@ -16,7 +16,7 @@ window.W120 = {
   // e.g. "27731234567". Leave "" to hide all WhatsApp buttons until ready.
   WHATSAPP_NUMBER: "27833435786",
 
-  // Map defaults (Lenasia South / Vlakfontein, Ward 120)
+  // Map defaults (Lenasia South, Ward 120)
   MAP_CENTER: [-26.392, 27.870],
   MAP_ZOOM: 13,
 
@@ -61,11 +61,8 @@ window.W120 = {
     "Lenasia South",
     "Lenasia South Ext 1",
     "Lenasia South Ext 4",
-    "Hospital Hills (Ext 28)",
-    "Vlakfontein",
-    "Lawley",
-    "Ennerdale",
-    "Orange Farm",
+    "Kiasha Park",
+    "Hospital Hill",
     "Other / nearby"
   ]
 };

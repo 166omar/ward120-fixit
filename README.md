@@ -1,7 +1,7 @@
 # Fix Ward 120 🛠️
 
 **A Truth and Solidarity community project** — residents of Ward 120 (Lenasia South,
-Hospital Hills, Vlakfontein) and nearby Region G areas report water leaks, sewer spills
+Kiasha Park, Hospital Hill) and nearby Region G areas report water leaks, sewer spills
 and broken roads. Every report is public, numbered, and tracked on a visible timeline
 until it is fixed. Inspired by the Roshnee community's fix-it-ourselves spirit.
 

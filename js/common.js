@@ -12,7 +12,7 @@ const PUBLIC_COLUMNS =
   "id,ref,source,category,description,area,municipality,lat,lng,photo_url,status,status_note," +
   "escalation_ref,fixed_photo_url,fixed_at,supports,created_at,updated_at";
 
-/* "Vlakfontein · City of Johannesburg" — used on cards and detail views */
+/* "Kiasha Park · City of Johannesburg" — used on cards and detail views */
 function placeLabel(r) {
   return esc(r.area) + (r.municipality ? " · " + esc(r.municipality) : "");
 }
